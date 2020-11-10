@@ -1,0 +1,102 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:531301061308391862",
+      "lastPropertyId": "5:8725631877360418625",
+      "name": "Probe",
+      "properties": [
+        {
+          "id": "1:8492360897890709885",
+          "name": "Id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "3:4373162038584384537",
+          "name": "Name",
+          "type": 9
+        },
+        {
+          "id": "4:7245905003417372",
+          "name": "Description",
+          "type": 9
+        },
+        {
+          "id": "5:8725631877360418625",
+          "name": "I2cDeviceID",
+          "type": 9
+        }
+      ]
+    },
+    {
+      "id": "2:5287188735980611158",
+      "lastPropertyId": "10:6571457969804375332",
+      "name": "TemperatureRecord",
+      "properties": [
+        {
+          "id": "1:7369514752525823396",
+          "name": "Id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:6630095324622779425",
+          "name": "Probe_Id",
+          "type": 6,
+          "flags": 8192
+        },
+        {
+          "id": "4:3629779910792270656",
+          "name": "Probe_Name",
+          "type": 9
+        },
+        {
+          "id": "5:6385489819621435840",
+          "name": "Probe_Description",
+          "type": 9
+        },
+        {
+          "id": "6:5640796215666218357",
+          "name": "Timestamp",
+          "type": 10
+        },
+        {
+          "id": "7:3201325193531050785",
+          "name": "TemperatureHot",
+          "type": 8
+        },
+        {
+          "id": "8:4596542836979447995",
+          "name": "TemperatureCold",
+          "type": 8
+        },
+        {
+          "id": "9:1836373740217458181",
+          "name": "TemperatureDelta",
+          "type": 8
+        },
+        {
+          "id": "10:6571457969804375332",
+          "name": "Probe_I2cDeviceID",
+          "type": 9
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "2:5287188735980611158",
+  "lastIndexId": "",
+  "lastRelationId": "",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    7909514478323527039,
+    7895857285283737484
+  ],
+  "retiredRelationUids": [],
+  "version": 1
+}
