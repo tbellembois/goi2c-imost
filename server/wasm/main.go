@@ -1,3 +1,4 @@
+// +build go1.16,js,wasm
 package main
 
 import (
