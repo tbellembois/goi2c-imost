@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+    imost-i2cnotifier:
+        container_name: imost-i2cnotifier
+        image: tbellembois/imost-i2cnotifier:latest
+        restart: unless-stopped
+        volumes:
+            # - /other/local/path/to/csv:/csv:ro
+            - /tmp/collectd/csv:/csv:ro
+        environment:
+            # - NOTIFIER_FACETTESERVERADDRESS=http://127.0.0.1:12003
+            # - NOTIFIER_COLLECTDCSVDATADIR=/csv
+            # - NOTIFIER_MAILSERVERADDRESS=localhost
+            # - NOTIFIER_MAILSERVERPORT=25
+            # - NOTIFIER_MAILSERVERFROM=noreply@uca.fr
+            # - NOTIFIER_MAILSERVERTO=me@uca.fr
+            # - NOTIFIER_PROBES=sonde1:12.5:20.5:10m sonde2:-20:-2.5:30m
+            - NOTIFIER_FACETTESERVERADDRESS=http://192.168.1.77:12003
+            - NOTIFIER_COLLECTDCSVDATADIR=/csv
+            - NOTIFIER_MAILSERVERADDRESS=mtarelay.dsi.uca.fr
+            - NOTIFIER_MAILSERVERPORT=25
+            - NOTIFIER_MAILSERVERFROM=cr2i63.iut-clermont@uca.fr
+            - NOTIFIER_MAILSERVERTO=thomas.bellembois@uca.fr
+            - NOTIFIER_PROBES=sonde-fake-1:-10:40:10m sonde-fake-2:-10:40:10m sonde-64:15:30:15m

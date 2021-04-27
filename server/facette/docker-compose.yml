@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+    facette:
+        container_name: facette
+        image: facette/facette:latest
+        restart: unless-stopped
+        ports:
+            - 12003:12003
+        volumes:
+            # - /local/path/to/server/facette/etc:/etc/facette
+            # - /local/path/to/server/facette/var:/var
+            # - /other/local/path/to/rrd:/rrd:ro
+            - /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/goi2c/server/facette/etc:/etc/facette
+            - /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/goi2c/server/facette/var:/var
+            - /tmp/rrd:/rrd:ro
