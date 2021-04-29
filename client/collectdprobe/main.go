@@ -13,10 +13,11 @@ import (
 
 	"github.com/d2r2/go-i2c"
 	"github.com/d2r2/go-logger"
-	"github.com/tbellembois/goi2c/client/collectdprobe/util"
 
 	"collectd.org/api"
 	"collectd.org/network"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -50,6 +51,20 @@ var (
 	flagFakeSend              bool   // print data instead of sending them
 	flagFakeId                string // only if flagFakeData=true, i2c device id can be specified
 )
+
+// Get preferred outbound ip of this machine.
+// reference: https://stackoverflow.com/questions/23558425/how-do-i-get-the-local-ip-address-in-go
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
+}
 
 func connectServer() {
 
@@ -124,7 +139,7 @@ func main() {
 	if flagFakeData {
 
 		if flagFakeId == "" {
-			i2cDeviceID = util.RandStringBytesMaskImprSrcUnsafe(8)
+			i2cDeviceID = uuid.NewString()
 		} else {
 			i2cDeviceID = flagFakeId
 		}
@@ -144,7 +159,8 @@ func main() {
 		if data, _, err = i2cConn.ReadRegBytes(0x20, 2); err != nil {
 			log.Fatal(err)
 		}
-		i2cDeviceID = fmt.Sprintf("%v", data[0])
+		//i2cDeviceID = fmt.Sprintf("%v", data[0])
+		i2cDeviceID = GetOutboundIP().String()
 		// data[1] is the Major/Minor Revision ID.
 
 		// Thermocouple Sensor Configuration.
