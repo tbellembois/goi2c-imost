@@ -196,8 +196,9 @@ func main() {
 			Identifier: api.Identifier{
 				Host:   fmt.Sprintf("sonde-%s", i2cDeviceID),
 				Plugin: "digitemp",
-				Type:   "gauge",
+				Type:   "imost_temperature",
 			},
+			DSNames:  []string{"hot", "cold"},
 			Time:     time.Now(),
 			Interval: sendFrequencyDuration,
 		}
@@ -231,20 +232,20 @@ func main() {
 			//
 			// Read delta command
 			//
-			if _, err = i2cConn.WriteBytes([]byte{0x01}); err != nil {
-				log.Fatal(err)
-			}
-			if data, _, err = i2cConn.ReadRegBytes(0x01, 2); err != nil {
-				log.Fatal(err)
-			}
+			// if _, err = i2cConn.WriteBytes([]byte{0x01}); err != nil {
+			// 	log.Fatal(err)
+			// }
+			// if data, _, err = i2cConn.ReadRegBytes(0x01, 2); err != nil {
+			// 	log.Fatal(err)
+			// }
 
-			// Calculating delta temperature.
-			deltaTemp := (float64(data[0]) * float64(16)) + (float64(data[1]) / float64(16))
-			if fmt.Sprintf("%08b", data[0]) == "1" {
-				deltaTemp = deltaTemp - 4096
-			}
+			// // Calculating delta temperature.
+			// deltaTemp := (float64(data[0]) * float64(16)) + (float64(data[1]) / float64(16))
+			// if fmt.Sprintf("%08b", data[0]) == "1" {
+			// 	deltaTemp = deltaTemp - 4096
+			// }
 
-			log.Printf("- delta temp: %f", deltaTemp)
+			// log.Printf("- delta temp: %f", deltaTemp)
 
 			//
 			// Read cold junction command
@@ -263,6 +264,7 @@ func main() {
 			}
 
 			log.Printf("- cold temp: %f", coldTemp)
+			vl.Values = append(vl.Values, api.Gauge(coldTemp))
 
 		}
 
