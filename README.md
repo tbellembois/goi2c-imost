@@ -27,6 +27,7 @@ Uses 3 plugins:
 ```bash
     // configure collectd.conf
     collectd -C ./collectd.conf
+    cp types.db.custom /etc/collectd/
 ```
 
 `server/facette`: Facette graph frontend configuration (as a Docker container) using rrd as unique provider.
