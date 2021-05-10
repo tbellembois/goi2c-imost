@@ -255,7 +255,7 @@ func startTails() {
 	today := time.Now().Format("2006-01-02")
 	for _, source := range sources {
 
-		csvFileName := path.Join(flagCollectdCSVDataDir, source, "digitemp", fmt.Sprintf("gauge-%s", today))
+		csvFileName := path.Join(flagCollectdCSVDataDir, source, "digitemp", fmt.Sprintf("imost_temperature-%s", today))
 
 		go func(csvFileName, source string) {
 
