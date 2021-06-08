@@ -5,6 +5,7 @@ mailServerAddress=""
 mailServerPort=""
 mailServerFrom=""
 mailServerTo=""
+debug=""
 
 probes=$NOTIFIER_PROBES
 
@@ -32,6 +33,10 @@ if [ ! -z "$NOTIFIER_MAILSERVERTO" ]
 then
       mailServerTo="-mailServerTo $NOTIFIER_MAILSERVERTO"
 fi
+if [ ! -z "$NOTIFIER_DEBUG" ]
+then
+      debug="-debug"
+fi
 
 /var/www-data/notifier \
 $facetteServerAddress \
@@ -40,6 +45,7 @@ $mailServerAddress \
 $mailServerPort \
 $mailServerFrom \
 $mailServerTo \
+$debug \
 $probes
 
 echo "Sleeping..."

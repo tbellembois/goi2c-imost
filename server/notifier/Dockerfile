@@ -6,6 +6,8 @@ COPY entrypoint.sh /
 
 RUN chmod +x /entrypoint.sh
 
+ENV TZ=Europe/Paris
+
 USER www-data
 WORKDIR /var/www-data
 ENTRYPOINT [ "/entrypoint.sh" ]

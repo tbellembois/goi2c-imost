@@ -18,6 +18,7 @@ import (
 
 	"github.com/go-co-op/gocron"
 	"github.com/hpcloud/tail"
+	"github.com/sirupsen/logrus"
 )
 
 type ProbeConfig struct {
@@ -34,6 +35,7 @@ var (
 	flagMailServerPort       string
 	flagMailServerFrom       string
 	flagMailServerTo         string
+	flagDebug                bool
 	probeConfigs             map[string]*ProbeConfig
 	emailRegex               *regexp.Regexp
 
@@ -49,11 +51,12 @@ func init() {
 	flag.StringVar(&flagMailServerPort, "mailServerPort", "25", "mail server port (default 25)")
 	flag.StringVar(&flagMailServerFrom, "mailServerFrom", "", "mail server from (default '')")
 	flag.StringVar(&flagMailServerTo, "mailServerTo", "", "mail server to (default '')")
+	flag.BoolVar(&flagDebug, "debug", false, "enable debug logs")
 	flag.Parse()
 
 	// Checking mandatory arguments.
 	if len(flag.Args()) == 0 {
-		fmt.Println("missing probe range arguments as probeName:minValue:maxValue:alertThreshold")
+		logrus.Println("missing probe range arguments as probeName:minValue:maxValue:alertThreshold")
 		os.Exit(1)
 	}
 
@@ -61,15 +64,19 @@ func init() {
 
 	// Validating from.
 	if !isEmailValid(flagMailServerFrom) {
+
 		fmt.Printf("invalid from email syntax for %s", flagMailServerFrom)
 		os.Exit(1)
+
 	}
 	// Validating to.
 	for _, email := range strings.Split(flagMailServerTo, ",") {
+
 		if !isEmailValid(email) {
 			fmt.Printf("invalid from email syntax for %s", email)
 			os.Exit(1)
 		}
+
 	}
 
 	fmt.Printf("- facette server URL %s\n", flagFacetteServerAddress)
@@ -84,7 +91,7 @@ func init() {
 
 		result := probeConfigRegex.FindAllStringSubmatch(arg, -1)
 		if result == nil {
-			fmt.Println("probe range invalid syntax")
+			logrus.Println("probe range invalid syntax")
 			os.Exit(1)
 		}
 
@@ -114,6 +121,13 @@ func init() {
 			AlertThreshold: duration,
 		}
 
+	}
+
+	// Init logger.
+	if flagDebug {
+		logrus.SetLevel(logrus.DebugLevel)
+	} else {
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 
 }
@@ -148,31 +162,31 @@ func sendMail(text string) {
 	message += "\r\n" + body + "\r\n"
 
 	if client, e = smtp.Dial(flagMailServerAddress + ":" + flagMailServerPort); e != nil {
-		fmt.Println(e)
+		logrus.Println(e)
 		return
 	}
 	defer client.Close()
 
 	if e = client.Mail(flagMailServerFrom); e != nil {
-		fmt.Println(e)
+		logrus.Println(e)
 		return
 	}
 
 	for _, t := range to {
 		if e = client.Rcpt(t); e != nil {
-			fmt.Println(e)
+			logrus.Println(e)
 			return
 		}
 	}
 
 	if smtpw, e = client.Data(); e != nil {
-		fmt.Println(e)
+		logrus.Println(e)
 		return
 	}
 
 	buf := bytes.NewBufferString(message)
 	if _, e = buf.WriteTo(smtpw); e != nil {
-		fmt.Println(e)
+		logrus.Println(e)
 		return
 	}
 	smtpw.Close()
@@ -183,9 +197,12 @@ func sendMail(text string) {
 
 func sendAlert(source string, temp float64, logTime time.Time) {
 
+	logrus.WithFields(logrus.Fields{"source": source, "temp": temp, "logTime": logTime}).Debug("sendAlert")
+
 	lastAlert := probeConfigs[source].LastAlert
 	alertThreshold := probeConfigs[source].AlertThreshold
-	now := time.Now()
+	now := time.Now().In(time.Local)
+	logrus.WithFields(logrus.Fields{"lastAlert": lastAlert, "alertThreshold": alertThreshold, "now(time.Local)": now}).Debug("sendAlert")
 
 	if lastAlert.Add(alertThreshold).Before(now) {
 
@@ -197,7 +214,7 @@ func sendAlert(source string, temp float64, logTime time.Time) {
 			probeConfigs[source].MaxTemp)
 		probeConfigs[source].LastAlert = now
 
-		fmt.Println(msg)
+		logrus.Println(msg)
 		sendMail(msg)
 
 	}
@@ -206,6 +223,8 @@ func sendAlert(source string, temp float64, logTime time.Time) {
 
 func checkAlert(source, log string) {
 
+	logrus.WithFields(logrus.Fields{"source": source, "log": log}).Debug("checkAlert")
+
 	// Log format: timestamp,temperature
 	// exemple: 1619172608.372,28.625000
 	s := strings.Split(log, ",")
@@ -213,14 +232,15 @@ func checkAlert(source, log string) {
 	// Leaving the nanoseconds.
 	intTimestamp, err := strconv.ParseInt(strings.Split(s[0], ".")[0], 10, 64)
 	if err != nil {
-		fmt.Println(err)
+		logrus.Println(err)
 		return
 	}
-	logTime := time.Unix(intTimestamp, 0)
+	logTime := time.Unix(intTimestamp, 0).In(time.Local)
+	logrus.WithFields(logrus.Fields{"intTimestamp": intTimestamp, "logTime(time.Local)": logTime}).Debug("checkAlert")
 
 	temperature, err := strconv.ParseFloat(s[1], 64)
 	if err != nil {
-		fmt.Println(err)
+		logrus.Println(err)
 		return
 	}
 
@@ -232,7 +252,7 @@ func checkAlert(source, log string) {
 
 func restartTails() {
 
-	fmt.Println("- restarting tails")
+	logrus.Println("- restarting tails")
 	stopTails()
 	startTails()
 
@@ -252,17 +272,20 @@ func stopTails() {
 
 func startTails() {
 
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().In(time.Local).Format("2006-01-02")
+	logrus.WithFields(logrus.Fields{"today": today}).Debug("startTails")
+
 	for _, source := range sources {
 
 		csvFileName := path.Join(flagCollectdCSVDataDir, source, "digitemp", fmt.Sprintf("imost_temperature-%s", today))
+		logrus.WithFields(logrus.Fields{"csvFileName": csvFileName}).Debug("startTails")
 
 		go func(csvFileName, source string) {
 
 			fmt.Printf("- opening %s for probe %s\n", csvFileName, source)
 			t, err := tail.TailFile(csvFileName, tail.Config{Follow: true})
 			if err != nil {
-				fmt.Println(err)
+				logrus.Println(err)
 				return
 			}
 
@@ -277,7 +300,7 @@ func startTails() {
 					continue
 				}
 
-				// fmt.Println(line.Text)
+				logrus.WithFields(logrus.Fields{"line.Text": line.Text}).Debug("startTails")
 
 				if line.Text == "STOP" {
 					fmt.Printf("- received STOP tail for %s\n", source)
@@ -327,7 +350,7 @@ func main() {
 	fmt.Printf("- tailing sources %+v\n", sources)
 	startTails()
 
-	fmt.Println("- starting cron")
+	logrus.Println("- starting cron")
 	cronScheduler := gocron.NewScheduler(time.UTC)
 	_, err = cronScheduler.Every(1).Day().At("00:01").Do(restartTails)
 	if err != nil {

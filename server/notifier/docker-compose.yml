@@ -15,6 +15,7 @@ services:
             # - NOTIFIER_MAILSERVERFROM=noreply@uca.fr
             # - NOTIFIER_MAILSERVERTO=me@uca.fr
             # - NOTIFIER_PROBES=sonde1:12.5:20.5:10m sonde2:-20:-2.5:30m
+            # - NOTIFIER_DEBUG=false
             - NOTIFIER_FACETTESERVERADDRESS=http://192.168.1.77:12003
             - NOTIFIER_COLLECTDCSVDATADIR=/csv
             - NOTIFIER_MAILSERVERADDRESS=mtarelay.dsi.uca.fr
